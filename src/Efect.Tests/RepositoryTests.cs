@@ -248,5 +248,39 @@ namespace Efect.Tests
             selection.Should().HaveCount(persons.Count).And
                 .OnlyContain(x => x.GetType().GetProperties().Select(y => y.Name).All(y => selectedProperties.Contains(y)));
         }
+
+        [Fact]
+        public async Task AnyAsyncTest()
+        {
+            var fixture = new Fixture();
+            var persons = fixture.Build<Person>().With(x => x.Age, 30).CreateMany(5).ToList();
+            persons[0].Age = 25;
+            persons[2].Age = 20;
+            persons[3].Age = 16;
+            TestDatabase.Persons.AddRange(persons);
+            await TestDatabase.SaveChangesAsync();
+            var repository = new Repository<Person>(new TestDatabaseContext());
+
+            var any = await repository.AnyAsync(x => x.Age < 30);
+
+            any.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task CountAsyncTest()
+        {
+            var fixture = new Fixture();
+            var persons = fixture.Build<Person>().With(x => x.Age, 30).CreateMany(5).ToList();
+            persons[0].Age = 25;
+            persons[2].Age = 20;
+            persons[3].Age = 16;
+            TestDatabase.Persons.AddRange(persons);
+            await TestDatabase.SaveChangesAsync();
+            var repository = new Repository<Person>(new TestDatabaseContext());
+
+            var count = await repository.CountAsync(x => x.Age < 30);
+
+            count.Should().Be(3);
+        }
     }
 }
